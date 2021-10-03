@@ -1,0 +1,307 @@
+#pragma METAINFO("PC: FFX GCV Script", 1, 2, "rasalghul")
+
+#include <keyboard.gph>
+#include <mouse.gph>
+
+// DOKU
+// LED RED = Mod is off (M for on or N for off)
+// LED Blue = wait input from gcv script
+// LED Green = in Battle Mode
+// LED Purple = in Farm Mode
+// ----------------------------------------------------------------------------------------------------------------
+
+// KEYS
+//
+// ----------------------------------------------------------------------------------------------------------------
+
+#define AB01 KEY_C
+#define UP KEY_UPARROW
+#define DOWN KEY_DOWNARROW  
+#define LEFT KEY_LEFTARROW
+#define RIGHT KEY_RIGHTARROW 
+
+// VARIABLES
+//
+// ----------------------------------------------------------------------------------------------------------------
+
+bool battleend = FALSE;
+bool tidus = FALSE;
+bool yuna = FALSE;
+bool kimahri = FALSE;
+bool rikku = FALSE;
+bool auron = FALSE;
+bool lulu = FALSE;
+bool wakka = FALSE;
+bool battle = FALSE;
+bool farm = FALSE;
+bool mod_on = TRUE;
+int  led_change_flag = 0;
+
+// INIT
+//
+// ----------------------------------------------------------------------------------------------------------------
+
+init {
+	
+	// AUTO OUTPUT PROTOCOL
+	
+	port_connect(PORT_USB_C, PROTOCOL_HID);
+
+	keymapping();
+   	mousemapping();
+	
+}
+
+main {
+	
+	// HID PASSTHROUGH
+    //
+    // ----------------------------------------------------------------------------------------------------------------
+	
+	key_passthru();
+    mouse_passthru();
+	
+	// Mod off/on 
+	if(key_status(KEY_N)) {
+		mod_on = FALSE;
+		ColorLED('R');
+	}
+	
+	if(key_status(KEY_M)) {
+		mod_on = TRUE;
+		ColorLED('B');
+	}
+	
+	if(mod_on) {
+		if(gcv_ready()) {
+			battleend = gcv_read(0);
+			tidus = gcv_read(1);
+			yuna = gcv_read(2);
+			kimahri = gcv_read(3);
+			rikku = gcv_read(4);
+			auron = gcv_read(5);
+			lulu = gcv_read(6);
+			wakka = gcv_read(7);
+			battle = gcv_read(8);
+			farm = gcv_read(9);
+		}
+
+		if(battleend)
+			combo_run(be);
+
+		if(tidus)
+			combo_run(tidus_attack);
+	
+		if(yuna)
+			combo_run(yuna_attack);
+
+		if(kimahri)
+			combo_run(kimahri_attack);
+
+		if(rikku)
+			combo_run(rikku_attack);
+
+		if(auron)
+			combo_run(auron_attack);
+
+		if(lulu)
+			combo_run(lulu_attack);
+
+		if(wakka)
+			combo_run(wakka_attack);
+		
+		if(battle)
+			ColorLED('P');
+		
+		if(farm)
+			ColorLED('G');
+
+		}
+		
+	}
+
+combo tidus_attack
+
+{
+	wait(irand(500)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	wait(irand(500));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	printf("tidus_attack end");
+	
+}
+
+combo yuna_attack
+{
+	wait(irand(500)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	wait(irand(500));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));	
+	printf("yuna_attack end");
+}
+
+combo kimahri_attack
+{
+	wait(irand(500)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	wait(irand(500));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	printf("kimahri_attack end");
+}
+
+combo rikku_attack
+{
+	wait(irand(500)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	wait(irand(500));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	printf("rikku_attack end");
+}
+
+combo auron_attack
+{
+	wait(irand(500)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	wait(irand(500));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	printf("auron_attack end");
+}
+
+combo lulu_attack
+{
+	wait(irand(500)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	wait(irand(500));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	printf("lulu_attack end");
+}
+
+combo wakka_attack
+{
+	wait(irand(500)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	wait(irand(500));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(60));
+	wait(irand(60));
+	printf("wakka_attack end");
+}
+
+combo dev
+
+{
+	printf("dev start");
+	wait(irand(500)); //start delay
+	key_set(DOWN, TRUE);
+	key_set(DOWN, FALSE);
+	wait(irand(200));
+	printf("dev end");
+		
+}
+
+combo be
+
+{
+	wait(irand(3000)); //start delay
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(2000));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(2000));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	wait(irand(2000));
+	key_set(AB01, TRUE);
+	wait(irand(60));
+	key_set(AB01, FALSE);
+	printf("battle end end");
+		
+}
+
+// FUNCTIONS
+//
+// ----------------------------------------------------------------------------------------------------------------
+
+// Diese Funktion nimmt einen Wert an und gibt eine leicht zufällige Version der ursprünglichen Zahl zurück (innerhalb eines 10%-Fensters).
+int irand(int scramble) {
+	fix32 fraction = (fix32) scramble * 0.10;
+	int vmin = scramble - (int) fraction;
+	int vmax = scramble + (int) fraction;
+	return(((int)(rand() * (fix32)(vmax + 1 - vmin))) + vmin);
+}
+
+// LED Funktion
+void ColorLED(char Color) {
+	fix32 Color1, Color2, Color3, Color4;
+	
+	if(Color == 'B'){Color1 = 100.00;    Color2 = 0.00;    Color3 = 0.00;    Color4 = 0.00;} // Blau
+	if(Color == 'R'){Color1 = 0.00;    Color2 = 100.00;    Color3 = 0.00;    Color4 = 0.00;} // Rot
+	if(Color == 'G'){Color1 = 0.00;    Color2 = 0.00;    Color3 = 100.00;    Color4 = 0.00;} // Grün
+	if(Color == 'P'){Color1 = 0.00;    Color2 = 0.00;    Color3 = 0.00;    Color4 = 100.0;} // Lila
+	if(Color == 'Y'){Color1 = 0.00;    Color2 = 100.00;    Color3 = 100.00;    Color4 = 0.0;} // Gelb
+
+	led_set(LED_1, Color1, 0);
+	led_set(LED_2, Color2, 0);
+	led_set(LED_3, Color3, 0);
+	led_set(LED_4, Color4, 0);
+	
+	return;
+}
