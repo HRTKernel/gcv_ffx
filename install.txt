@@ -1,0 +1,11 @@
+tesseract for windows: https://github.com/UB-Mannheim/tesseract/wiki
+
+After that we should add an PATH to windows system variables. Actually it’s an easy step. Firstly we find and copy the root folder of the tesseract installation. It will shold be like that :
+C:\Program Files\Tesseract-OCR
+And then in the search bar of the windows Advanced System Settings
+Advanced system settings > Advanced > Environment variables > PATH > New
+We paste the source path which copied and we save this configurations. After this step the computer must be rebooted to apply configurations.
+The tesseract installation completed. You can confirm the installation from the command line. When we run tesseract command on the command line, it should give us information about the program.
+
+Now we can move on to the python part. To use tesseract on python, we should download pytesseract library. This library can be downloaded via pip to the environment you are using.
+pip install pytesseract

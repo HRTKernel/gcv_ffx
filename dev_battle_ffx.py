@@ -1,5 +1,7 @@
 import os
 import cv2
+import pytesseract
+import time
 
 # Developer Mode: 0 = off, 1 = on
 DEV_MODE = 0
@@ -9,6 +11,9 @@ BATTLE_MODE = 0
 
 # Farm Mode: 0 = not Farm, 1 = Farm
 FARM_MODE = 1
+
+# OCR Mode: 0 = off, 1 = on
+OCR_MODE = 0
 
 # Datasets images
 BATTLEEND_DATASET = 217.158927976724
@@ -40,8 +45,6 @@ class GCVWorker:
         self.gcvdata = bytearray([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
         #self.gcvdata = bytearray()
         #self.gcvdata.extend(int(value).to_bytes(2, byteorder='big', signed=True))
-        self.devon = True
-        self.devoff = False
         self.battleon = True
         self.battleoff = False
         self.farmon = True
@@ -57,17 +60,17 @@ class GCVWorker:
         self.found04 = True  # rikku
         self.found05 = True  # auron
         self.found06 = True  # lulu
-        self.found07 = True  # lulu
+        self.found07 = True  # wakka
+        self.imageocr = True
 
     def __del__(self):
         del self.gcvdata
-        del self.devon
-        del self.devoff
         del self.battleon
         del self.battleoff
         del self.char
         del self.battleend
         del self.battle
+        del self.imageocr
 
     def process(self, frame):
         global DEV_MODE
@@ -91,6 +94,7 @@ class GCVWorker:
         global AURON_OFFSET
         global LULU_OFFSET
         global WAKKA_OFFSET
+        global OCR_MODE
 
         self.gcvdata[BATTLEEND_OFFSET] = False
         self.gcvdata[BATTLESTART_OFFSET] = False
@@ -103,18 +107,43 @@ class GCVWorker:
         self.gcvdata[LULU_OFFSET] = False
         self.gcvdata[WAKKA_OFFSET] = False
 
-        picturechar = frame[186:219, 1326:1381]
-        picturebattleend = frame[764:873, 1326:1381]
-
-        similarchar = cv2.norm(self.char, picturechar)
-        similarbattleend = cv2.norm(self.battleend, picturebattleend)
-
-        if DEV_MODE == 0:
-            cv2.putText(frame, "DEV MODE: " + str(self.devoff), (5, 40),
+        #ocr
+        if OCR_MODE == 1 and self.imageocr:
+            cv2.imwrite('temp/char_1_hp_mp.jpg', frame[719:743, 1179:1432])
+            cv2.imwrite('temp/char_2_hp_mp.jpg', frame[762:787, 1179:1432])
+            cv2.imwrite('temp/char_3_hp_mp.jpg', frame[804:830, 1179:1432])
+            img_cv_char1 = cv2.imread(r'temp/char_1_hp_mp.jpg')
+            img_cv_char2 = cv2.imread(r'temp/char_2_hp_mp.jpg')
+            img_cv_char3 = cv2.imread(r'temp/char_3_hp_mp.jpg')
+            img_rgb_char1 = cv2.cvtColor(img_cv_char1, cv2.COLOR_BGR2RGB)
+            img_rgb_char2 = cv2.cvtColor(img_cv_char2, cv2.COLOR_BGR2RGB)
+            img_rgb_char3 = cv2.cvtColor(img_cv_char3, cv2.COLOR_BGR2RGB)
+            time.sleep(0.5)
+            print("Stats Char 1: " + pytesseract.image_to_string(img_rgb_char1))
+            time.sleep(0.5)
+            print("Stats Char 2: " + pytesseract.image_to_string(img_rgb_char2))
+            time.sleep(0.5)
+            print("Stats Char 3: " + pytesseract.image_to_string(img_rgb_char3))
+            self.imageocr = False
+            cv2.putText(frame, "OCR MODE: ON", (5, 80),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
                         cv2.LINE_AA)
+
+        elif OCR_MODE == 1:
+            pass
+
         else:
-            cv2.putText(frame, "DEV MODE: " + str(self.devon), (5, 40),
+            self.imageocr = True
+            cv2.putText(frame, "OCR MODE: OFF", (5, 80),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
+                        cv2.LINE_AA)
+
+        if DEV_MODE == 0:
+            cv2.putText(frame, "DEV MODE: OFF", (5, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
+                        cv2.LINE_AA)
+        else:
+            cv2.putText(frame, "DEV MODE: ON", (5, 40),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
                         cv2.LINE_AA)
 
@@ -131,14 +160,14 @@ class GCVWorker:
             self.farm = False
 
         if self.battle == True:
-            cv2.putText(frame, "In Battle Mode: " + str(self.battleon), (5, 80),
+            cv2.putText(frame, "In Battle Mode: " + str(self.battleon), (5, 160),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
                         cv2.LINE_AA)
             self.gcvdata[BATTLESTART_OFFSET] = True
 
         if self.battle == False:
-            cv2.putText(frame, "In Battle Mode: " + str(self.battleoff), (5, 80),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+            cv2.putText(frame, "In Battle Mode: " + str(self.battleoff), (5, 160),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
                         cv2.LINE_AA)
             self.gcvdata[BATTLESTART_OFFSET] = False
 
@@ -150,9 +179,15 @@ class GCVWorker:
 
         if self.farm == False:
             cv2.putText(frame, "In Farm Mode: " + str(self.farmoff), (5, 120),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
                         cv2.LINE_AA)
             self.gcvdata[FARM_OFFSET] = False
+
+        picturechar = frame[186:219, 1326:1381]
+        picturebattleend = frame[764:873, 1326:1381]
+
+        similarchar = cv2.norm(self.char, picturechar)
+        similarbattleend = cv2.norm(self.battleend, picturebattleend)
 
         if similarchar == TIDUS_DATASET and self.found01: # tidus
             print('Found: Tidus')
