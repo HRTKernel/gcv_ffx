@@ -65,18 +65,12 @@ class GCVWorker:
         self.battleoff = False
         self.farmon = True
         self.farmoff = False
-        self.char = cv2.imread('img/titus.jpg') # tidus
+        self.char = cv2.imread('img/titus.jpg')
         self.battleend = cv2.imread('img/battleend.jpg')
         self.foundBattleEnd = True
         self.battle = False
         self.farm = True
-        self.found01 = True # tidus
-        self.found02 = True # yuna
-        self.found03 = True  # kimahri
-        self.found04 = True  # rikku
-        self.found05 = True  # auron
-        self.found06 = True  # lulu
-        self.found07 = True  # wakka
+        self.foundchar = True
         self.imageocr = True
         self.healcheck = True
 
@@ -293,107 +287,62 @@ class GCVWorker:
         similarchar = cv2.norm(self.char, picturechar)
         similarbattleend = cv2.norm(self.battleend, picturebattleend)
 
-        if similarchar == TIDUS_DATASET and self.found01: # tidus
-            print('Found: Tidus')
-            OCR_MODE_T = 1
-            self.found01 = False
+        def char():
+            if similarchar == TIDUS_DATASET:
+                return TIDUS_DATASET
+            elif similarchar == YUNA_DATASET:
+                return YUNA_DATASET
+            elif similarchar == KIMAHRI_DATASET:
+                return KIMAHRI_DATASET
+            elif similarchar == RIKKU_DATASET:
+                return RIKKU_DATASET
+            elif similarchar == AURON_DATASET:
+                return AURON_DATASET
+            elif similarchar == LULU_DATASET:
+                return YUNA_DATASET
+            elif similarchar == WAKKA_DATASET:
+                return WAKKA_DATASET
+            else:
+                return 0
+
+        if similarchar == char() and self.foundchar: # tidus
+            #OCR_MODE_T = 1
+            self.foundchar = False
             BATTLE_MODE = 1
             FARM_MODE = 0
             if DEV_MODE == 0:
-                self.gcvdata[TIDUS_OFFSET] = True
+                if similarchar == TIDUS_DATASET:
+                    print("Found Tidus")
+                    self.gcvdata[TIDUS_OFFSET] = True
+                elif similarchar == YUNA_DATASET:
+                    print("Found Yuna")
+                    self.gcvdata[YUNA_OFFSET] = True
+                elif similarchar == KIMAHRI_DATASET:
+                    print("Found Kimarhri")
+                    self.gcvdata[KIMAHRI_OFFSET] = True
+                elif similarchar == RIKKU_DATASET:
+                    print("Found Rikku")
+                    self.gcvdata[RIKKU_OFFSET] = True
+                elif similarchar == AURON_DATASET:
+                    print("Found Auron")
+                    self.gcvdata[AURON_OFFSET] = True
+                elif similarchar == LULU_DATASET:
+                    print("Found Lulu")
+                    self.gcvdata[LULU_OFFSET] = True
+                elif similarchar == WAKKA_DATASET:
+                    print("Found Wakka")
+                    self.gcvdata[WAKKA_OFFSET] = True
+                else:
+                    self.gcvdata[0] = False
             else:
-                self.gcvdata[TIDUS_OFFSET] = False
+                self.gcvdata[0] = False
 
-        elif similarchar == YUNA_DATASET and self.found02: # yuna
-            print('Found: Yuna')
-            self.found02 = False
-            BATTLE_MODE = 1
-            FARM_MODE = 0
-            if DEV_MODE == 0:
-                self.gcvdata[YUNA_OFFSET] = True
-            else:
-                self.gcvdata[YUNA_OFFSET] = False
-
-        elif similarchar == KIMAHRI_DATASET and self.found03: # kimahri
-            print('Found: Kimahri')
-            self.found03 = False
-            BATTLE_MODE = 1
-            FARM_MODE = 0
-            if DEV_MODE == 0:
-                self.gcvdata[KIMAHRI_OFFSET] = True
-            else:
-                self.gcvdata[KIMAHRI_OFFSET] = False
-
-        elif similarchar == RIKKU_DATASET and self.found04: # rikku
-            print('Found: Rikku')
-            self.found04 = False
-            BATTLE_MODE = 1
-            FARM_MODE = 0
-            if DEV_MODE == 0:
-                self.gcvdata[RIKKU_OFFSET] = True
-            else:
-                self.gcvdata[RIKKU_OFFSET] = False
-
-        elif similarchar == AURON_DATASET and self.found05: # auron
-            print('Found: Auron')
-            self.found05 = False
-            BATTLE_MODE = 1
-            FARM_MODE = 0
-            if DEV_MODE == 0:
-                self.gcvdata[AURON_OFFSET] = True
-            else:
-                self.gcvdata[AURON_OFFSET] = False
-
-        elif similarchar == LULU_DATASET and self.found06: # lulu
-            print('Found: Lulu')
-            self.found06 = False
-            BATTLE_MODE = 1
-            FARM_MODE = 0
-            if DEV_MODE == 0:
-                self.gcvdata[LULU_OFFSET] = True
-            else:
-                self.gcvdata[LULU_OFFSET] = False
-
-        elif similarchar == WAKKA_DATASET and self.found07: # wakka
-            print('Found: Wakka')
-            self.found07 = False
-            BATTLE_MODE = 1
-            FARM_MODE = 0
-            if DEV_MODE == 0:
-                self.gcvdata[WAKKA_OFFSET] = True
-            else:
-                self.gcvdata[WAKKA_OFFSET] = False
-
-        elif similarchar == TIDUS_DATASET: # tidus
-            OCR_MODE_T = 0
-            pass
-
-        elif similarchar == YUNA_DATASET: # yuna
-            pass
-
-        elif similarchar == KIMAHRI_DATASET: # kimahri
-            pass
-
-        elif similarchar == RIKKU_DATASET: # rikku
-            pass
-
-        elif similarchar == AURON_DATASET: # auron
-            pass
-
-        elif similarchar == LULU_DATASET: # lulu
-            pass
-
-        elif similarchar == WAKKA_DATASET: # wakka
+        elif similarchar == char():
+            #OCR_MODE_T = 0
             pass
 
         else:
-            self.found01 = True
-            self.found02 = True
-            self.found03 = True
-            self.found04 = True
-            self.found05 = True
-            self.found06 = True
-            self.found07 = True
+            self.foundchar = True
             #if DEV_MODE == 1:
                 #print(similarchar)
 
