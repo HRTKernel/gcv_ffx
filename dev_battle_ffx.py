@@ -1,10 +1,11 @@
 import os
 import cv2
 import pytesseract
+#import gtuner
 #import numpy as np
 import time
 import easyocr
-#import keyboard
+import keyboard
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -16,6 +17,17 @@ BATTLE_MODE = 0
 
 # Farm Mode: 0 = not Farm, 1 = Farm
 FARM_MODE = 1
+
+# Cords
+SETUP_CORDS = 0
+X1 = 1326 #1326
+X2 = 1381 #1381
+Y1 = 186
+Y2 = 219
+CHARCORDX1 = 1326
+CHARCORDX2 = 1381
+CHARCORDY1 = 186
+CHARCORDY2 = 219
 
 # Heal Check
 HEALCHECK = 0
@@ -52,12 +64,10 @@ AURON_OFFSET = 5
 LULU_OFFSET = 6
 WAKKA_OFFSET = 7
 
-
-
 class GCVWorker:
     def __init__(self, width, height):
         os.chdir(os.path.dirname(__file__))
-        self.gcvdata = bytearray([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
+        self.gcvdata = bytearray([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
         #self.gcvdata = bytearray()
         #self.gcvdata.extend(int(value).to_bytes(2, byteorder='big', signed=True))
         self.dev = False
@@ -73,6 +83,19 @@ class GCVWorker:
         self.foundchar = True
         self.imageocr = True
         self.healcheck = True
+        self.X = width
+        self.Y = height
+        self.index = 0
+        self.nextIndez = True
+        self.nextIndex = 0
+        self.x1 = X1
+        self.y1 = Y1
+        self.x2 = X2
+        self.y2 = Y2
+        self.image = True
+        self.image2 = True
+        self.showFrozenFrame = False
+        self.freeze = True
 
     def __del__(self):
         del self.gcvdata
@@ -83,6 +106,19 @@ class GCVWorker:
         del self.battleend
         del self.battle
         del self.imageocr
+        del self.X
+        del self.Y
+        del self.x1
+        del self.x2
+        del self.y1
+        del self.y2
+        del self.index
+        del self.nextIndez
+        del self.nextIndex
+        del self.image
+        del self.image2
+        del self.freeze
+        del self.showFrozenFrame
 
     def process(self, frame):
         global DEV_MODE
@@ -113,7 +149,7 @@ class GCVWorker:
         global HP_LOW_CHAR01
         global HP_LOW_CHAR02
         global HP_LOW_CHAR03
-
+        global SETUP_CORDS
         self.gcvdata[BATTLEEND_OFFSET] = False
         self.gcvdata[BATTLESTART_OFFSET] = False
         self.gcvdata[FARM_OFFSET] = False
@@ -124,6 +160,168 @@ class GCVWorker:
         self.gcvdata[AURON_OFFSET] = False
         self.gcvdata[LULU_OFFSET] = False
         self.gcvdata[WAKKA_OFFSET] = False
+###########################################################################################################
+        # this part is from YouTube: https://youtu.be/34cgrzyaOzE
+        # If the user activate the frozenFrame function then it will always display the same frame
+        if SETUP_CORDS == 1:
+            if self.showFrozenFrame:
+                frame = cv2.imread('frozenFrame.jpg')
+        if SETUP_CORDS == 1:
+            # Extract an image of the box | Button "q"
+            if keyboard.is_pressed("q") and self.image:
+                # Image extracted from the x and y coordinates
+                cv2.imwrite('xy.jpg', frame[self.y1:self.y1 + (self.y2 - self.y1), self.x1:self.x1 + (self.x2 - self.x1)])
+
+                # String variables that will be saved as txt file
+                text = "\"x1\": {}, \n\"y1\": {}, \n\"x2\": {}, \n\"y2\": {}, \n\"w\": {}, \n\"h\": {}\n".format(
+                    self.x1,
+                    self.y1,
+                    self.x2,
+                    self.y2,
+                    (self.x2 - self.x1),
+                    (self.y2 - self.y1))
+
+                variable = "\nframe = frame[{}:{}, {}:{}]".format(self.y1, self.y1 + (self.y2 - self.y1), self.x1,
+                                                              self.x1 + (self.x2 - self.x1))
+                f = open('xy.txt', 'w+')
+                f.write(text)
+                f.write(variable)
+                f.close()
+
+                # Inform the user where the files have been saved
+                print('A JPG and TXT file has been created on directory: {}'.format(os.path.dirname(__file__)))
+                self.image = False
+            elif keyboard.is_pressed("q"):
+                pass
+            else:
+                self.image = True
+
+            if keyboard.is_pressed("f10") and self.image2:
+                cv2.imwrite('xy.jpg', frame[self.y1:self.y1 + (self.y2 - self.y1), self.x1:self.x1 + (self.x2 - self.x1)])
+
+                text = "CHARCORDX1 = {} \nCHARCORDY1 = {} \nCHARCORDX2 = {} \nCHARCORDY2 = {} \n\"w\": {}, \n\"h\": {}\n".format(
+                    self.x1,
+                    self.y1,
+                    self.x2,
+                    self.y2,
+                    (self.x2 - self.x1),
+                    (self.y2 - self.y1))
+
+                variable = "\nframe = frame[{}:{}, {}:{}]".format(self.y1, self.y1 + (self.y2 - self.y1), self.x1,
+                                                              self.x1 + (self.x2 - self.x1))
+                f = open('charcords.txt', 'w+')
+                f.write(text)
+                f.write(variable)
+                f.close()
+
+                print('A JPG and TXT file has been created on directory: {}'.format(os.path.dirname(__file__)))
+                self.image2 = False
+            elif keyboard.is_pressed("f10"):
+                pass
+            else:
+                self.image2 = True
+
+            # Grab the current frame and freeze it so that the user can extract the image easier | Button "e"
+            if SETUP_CORDS == 1:
+                if keyboard.is_pressed("e") and self.freeze:
+                    self.freeze = False
+                    self.showFrozenFrame = not self.showFrozenFrame
+
+                # Display the current state of the frame
+                    if self.showFrozenFrame:
+                        # Create an image of the current frame and save it to display it
+                        cv2.imwrite('frozenFrame.jpg', frame)
+                        print('Showing the frozen frame')
+                    else:
+                        print('Unfreezing the frame')
+
+                elif keyboard.is_pressed("e"):
+                    pass
+                else:
+                    self.freeze = True
+
+            # Setup cords
+        if SETUP_CORDS == 1:
+            cv2.putText(frame, "Setup Cords:", (5, 200),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.LINE_AA)
+
+            # X1 cord
+        if SETUP_CORDS == 1:
+            cv2.putText(frame, "X1: " + str(self.x1), (25, 240),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.LINE_AA)
+
+            # Y1 cord
+        if SETUP_CORDS == 1:
+            cv2.putText(frame, "Y1: " + str(self.y1), (25, 320),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.LINE_AA)
+
+            # X2 cord
+        if SETUP_CORDS == 1:
+            cv2.putText(frame, "X2: " + str(self.x2), (25, 280),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.LINE_AA)
+
+            # Y2 cord
+        if SETUP_CORDS == 1:
+            cv2.putText(frame, "Y2: " + str(self.y2), (25, 360),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.LINE_AA)
+
+            # Width
+        if SETUP_CORDS == 1:
+            cv2.putText(frame, "Width: " + str((self.x2 - self.x1)), (25, 400),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.LINE_AA)
+
+            # Height
+        if SETUP_CORDS == 1:
+            cv2.putText(frame, "Height: " + str((self.y2 - self.y1)), (25, 440),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                        cv2.LINE_AA)
+
+            # Changes the x and y index | Button "y""
+            if keyboard.is_pressed("y") and self.nextIndez:
+                self.index = self.index + 1
+                self.nextIndez = False
+                if self.index > 1 or self.index == 0:
+                    self.index = 0
+                    print('Now changing X1, Y1')
+                elif self.index == 1:
+                    print('Now changing X2, Y2')
+
+            # Moves the square being drawn on the square
+            if keyboard.is_pressed("w"):  # "w""
+                if self.index == 0:
+                    self.y1 = self.y1 - 1
+                else:
+                    self.y2 = self.y2 - 1
+
+            elif keyboard.is_pressed("s"):  # "s"
+                if self.index == 0:
+                    self.y1 = self.y1 + 1
+                else:
+                    self.y2 = self.y2 + 1
+
+            elif keyboard.is_pressed("d"):  # "d"
+                if self.index == 0:
+                    self.x1 = self.x1 + 1
+                else:
+                    self.x2 = self.x2 + 1
+
+            elif keyboard.is_pressed("a"):  # "a"
+                if self.index == 0:
+                    self.x1 = self.x1 - 1
+                else:
+                    self.x2 = self.x2 - 1
+
+            if keyboard.is_pressed("x") <= 1.0: # "x"
+                self.nextIndez = True
+
+            # Draws a box around the specified area
+            cv2.rectangle(frame, (self.x1, self.y1), (self.x2, self.y2), (0, 255, 0), 1)
 
 ###########################################################################################################
         #ocr database
@@ -281,7 +479,7 @@ class GCVWorker:
 ###########################################################################################################
         # chars
 
-        picturechar = frame[186:219, 1326:1381]
+        picturechar = frame[CHARCORDY1:CHARCORDY2, CHARCORDX1:CHARCORDX2]
         picturebattleend = frame[764:873, 1326:1381]
 
         similarchar = cv2.norm(self.char, picturechar)
@@ -305,7 +503,7 @@ class GCVWorker:
             else:
                 return 0
 
-        if similarchar == char() and self.foundchar: # tidus
+        if similarchar == char() and SETUP_CORDS == 0 and self.foundchar: # tidus
             #OCR_MODE_T = 1
             self.foundchar = False
             BATTLE_MODE = 1
@@ -343,8 +541,8 @@ class GCVWorker:
 
         else:
             self.foundchar = True
-            #if DEV_MODE == 1:
-                #print(similarchar)
+            if SETUP_CORDS == 1:
+                print(similarchar)
 
         if similarbattleend == BATTLEEND_DATASET and self.foundBattleEnd:
             print('Found: Battle End')
